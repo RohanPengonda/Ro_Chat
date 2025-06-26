@@ -203,7 +203,7 @@ const Main_Page = ({ loggedInUserId }) => {
         <Sidebar />
       </section> */}
       <div className="flex flex-col flex-1">
-        <Header />
+        <Header userName={currentUser.name} />
         <div className="flex flex-1">
           <section className="w-1/3 border border-gray-100">
             <ChatCard
