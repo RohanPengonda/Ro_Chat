@@ -12,12 +12,19 @@ const ChatCard = ({
   const [filteredClients, setFilteredClients] = useState(clients);
 
   useEffect(() => {
+    // Sort clients by lastMessagePreview.timestamp (descending)
+    const sortedClients = [...clients].sort((a, b) => {
+      const aTime = a.lastMessagePreview?.timestamp ? new Date(a.lastMessagePreview.timestamp).getTime() : 0;
+      const bTime = b.lastMessagePreview?.timestamp ? new Date(b.lastMessagePreview.timestamp).getTime() : 0;
+      return bTime - aTime;
+    });
+
     if (searchTerm.trim() === "") {
-      setFilteredClients(clients);
+      setFilteredClients(sortedClients);
       return;
     }
     setFilteredClients(
-      clients.filter((c) =>
+      sortedClients.filter((c) =>
         c.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
@@ -27,27 +34,20 @@ const ChatCard = ({
     <div className="h-160 p-1 bg-gray-50 rounded-md shadow-sm">
       {/* Top Actions */}
       <div className="flex items-center justify-between p-2">
-        <div className="flex items-center space-x-2">
-          <button className="text-green-600 font-medium text-sm border border-gray-200 rounded w-25 h-7">
-            Custom filter
-          </button>
-          <button className="border border-gray-200 text-sm px-2 py-1 rounded">
-            Save
-          </button>
-        </div>
-        <div className="flex items-center space-x-2">
+       
+        {/* <div className="flex items-center space-x-2"> */}
           <input
             type="text"
             placeholder="Search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-200 px-2 py-1 rounded-md text-sm w-30"
+            className="border border-gray-200 px-2 py-1 rounded-md text-sm w-[1/3]"
           />
-          <button className="flex bg-green-100 text-green-700 text-sm px-2 py-1 rounded gap-1">
+          {/* <button className="flex bg-green-100 text-green-700 text-sm px-2 py-1 rounded gap-1">
             <MdFilterList />
             Filtered
-          </button>
-        </div>
+          </button> */}
+        {/* </div> */}
       </div>
       <hr className="text-gray-200 space-y-2" />
 
@@ -67,7 +67,7 @@ const ChatCard = ({
                 key={client._id}
                 className={`p-3 rounded cursor-pointer hover:bg-gray-100 border border-gray-200 ${
                   selectedClient?._id === client._id ? "bg-gray-200" : ""
-                }`}
+                } flex items-center justify-between`}
                 onClick={() => setSelectedClient(client)}
               >
                 <div>
@@ -78,17 +78,20 @@ const ChatCard = ({
                       : "No messages yet."}
                     {lastMessage?.timestamp && (
                       <p className="pl-20">
-                        {new Date(lastMessage.timestamp).toLocaleTimeString(
-                          [],
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )}
+                        {new Date(lastMessage.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </p>
                     )}
                   </div>
                 </div>
+                {/* Unread badge */}
+                {client.unreadCount > 0 && (
+                  <span className="ml-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    {client.unreadCount}
+                  </span>
+                )}
               </div>
             );
           })

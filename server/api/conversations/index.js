@@ -3,6 +3,7 @@ const router = express.Router();
 const dbConnect = require('../../lib/mongodb');
 const Conversation = require('../../models/conversation');
 const { verifyJWT } = require('../middleware/auth');
+const Message = require('../../models/message');
 
 router.get('/', verifyJWT, async (req, res) => {
   await dbConnect();
@@ -26,6 +27,20 @@ router.post('/', verifyJWT, async (req, res) => {
       conversation = await Conversation.create({ participants: userIds });
     }
     res.status(201).json(conversation);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/:id', verifyJWT, async (req, res) => {
+  await dbConnect();
+  const { id } = req.params;
+  try {
+    // Delete all messages for this conversation
+    await Message.deleteMany({ conversationId: id });
+    // Delete the conversation itself
+    await Conversation.findByIdAndDelete(id);
+    res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

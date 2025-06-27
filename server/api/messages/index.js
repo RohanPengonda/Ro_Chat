@@ -36,4 +36,61 @@ router.post('/', verifyJWT, async (req, res) => {
   }
 });
 
+router.delete('/', verifyJWT, async (req, res) => {
+  await dbConnect();
+  const { conversationId } = req.query;
+  if (!conversationId) {
+    return res.status(400).json({ error: 'conversationId is required' });
+  }
+  try {
+    // Delete all messages for this conversation
+    await Message.deleteMany({ conversationId });
+    // Clear lastMessage in the conversation
+    await Conversation.findByIdAndUpdate(conversationId, { $unset: { lastMessage: '' } });
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch('/read', verifyJWT, async (req, res) => {
+  await dbConnect();
+  const { conversationId, userId } = req.body;
+  try {
+    await Message.updateMany(
+      { conversationId, senderId: { $ne: userId }, isRead: false },
+      { $set: { isRead: true } }
+    );
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/unread-counts', verifyJWT, async (req, res) => {
+  await dbConnect();
+  const { userId } = req.query;
+  try {
+    // Get all conversations for this user
+    const conversations = await Conversation.find({
+      participants: userId
+    });
+    
+    // Get unread counts for each conversation
+    const unreadCounts = {};
+    for (const conv of conversations) {
+      const count = await Message.countDocuments({
+        conversationId: conv._id,
+        senderId: { $ne: userId },
+        isRead: false
+      });
+      unreadCounts[conv._id] = count;
+    }
+    
+    res.status(200).json(unreadCounts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router; 

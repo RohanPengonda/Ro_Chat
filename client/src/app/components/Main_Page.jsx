@@ -1,12 +1,22 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Sidebar from "./Sidebar.jsx";
-import Sidebar_Right from "./Sidebar_Right.jsx";
+
 import Header from "./Header.jsx";
 import ChatCard from "./ChatCard.jsx";
 import ChatArea from "./ChatArea.jsx";
 import io from "socket.io-client";
+import {
+  fetchUsers,
+  fetchSelf,
+  fetchConversations,
+  fetchOrCreateConversation,
+  fetchMessages,
+  sendMessage,
+  deleteConversation,
+  markMessagesAsRead,
+  getUnreadCounts,
+} from "../lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const socket = io(API_URL); // Connects to the backend server
@@ -21,6 +31,7 @@ const Main_Page = ({ loggedInUserId }) => {
   const messagesEndRef = useRef(null);
   // Store all conversations and their last messages
   const [conversations, setConversations] = useState([]);
+  const [unreadCounts, setUnreadCounts] = useState({});
 
   // Helper to get JWT token
   const getToken = () =>
@@ -28,21 +39,11 @@ const Main_Page = ({ loggedInUserId }) => {
 
   // Fetch current user and all other users
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUsersAndSelf = async () => {
       setLoading(true);
       try {
-        const token = getToken();
-        // Fetch current user
-        const resUser = await fetch(`${API_URL}/api/users?exclude=${loggedInUserId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const users = await resUser.json();
-        // Fetch self info (for display)
-        const resSelf = await fetch(`${API_URL}/api/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const allUsers = await resSelf.json();
-        const self = allUsers.find((u) => u._id === loggedInUserId);
+        const users = await fetchUsers(loggedInUserId);
+        const self = await fetchSelf(loggedInUserId);
         setCurrentUser(self);
         setClients(users);
         if (users.length > 0) setSelectedClient(users[0]);
@@ -51,21 +52,21 @@ const Main_Page = ({ loggedInUserId }) => {
       }
       setLoading(false);
     };
-    if (loggedInUserId) fetchUsers();
+    if (loggedInUserId) fetchUsersAndSelf();
   }, [loggedInUserId]);
 
   // Fetch all conversations for the current user
   useEffect(() => {
-    const fetchConversations = async () => {
+    const fetchAllConversations = async () => {
       if (!currentUser) return;
-      const token = getToken();
-      const res = await fetch(`${API_URL}/api/conversations?userId=${currentUser._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await fetchConversations(currentUser._id);
       setConversations(data);
+      
+      // Fetch unread counts for all conversations
+      const counts = await getUnreadCounts(currentUser._id);
+      setUnreadCounts(counts);
     };
-    if (currentUser) fetchConversations();
+    if (currentUser) fetchAllConversations();
   }, [currentUser]);
 
   // Fetch or create conversation and messages when selectedClient changes
@@ -73,24 +74,34 @@ const Main_Page = ({ loggedInUserId }) => {
     if (!selectedClient || !currentUser) return;
     const fetchConversationAndMessages = async () => {
       try {
-        const token = getToken();
         // Find or create conversation
-        const resConv = await fetch(`${API_URL}/api/conversations`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ userIds: [currentUser._id, selectedClient._id] }),
-        });
-        const conversation = await resConv.json();
+        const conversation = await fetchOrCreateConversation([
+          currentUser._id,
+          selectedClient._id,
+        ]);
         setConversationId(conversation._id);
         // Fetch messages
-        const resMsg = await fetch(`${API_URL}/api/messages?conversationId=${conversation._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const msgs = await resMsg.json();
+        const msgs = await fetchMessages(conversation._id);
         setMessages(msgs);
+        // Mark as read if there are unread messages for me
+        const hasUnread = msgs.some(
+          (msg) => msg.senderId !== currentUser._id && !msg.isRead
+        );
+        if (hasUnread) {
+          await markMessagesAsRead(conversation._id, currentUser._id);
+          // Refetch messages to get updated isRead status
+          const updatedMsgs = await fetchMessages(conversation._id);
+          setMessages(updatedMsgs);
+          // Update unread counts
+          const counts = await getUnreadCounts(currentUser._id);
+          setUnreadCounts(counts);
+          // Optimistically update isRead in state
+          setMessages((prevMsgs) =>
+            prevMsgs.map((msg) =>
+              msg.senderId !== currentUser._id ? { ...msg, isRead: true } : msg
+            )
+          );
+        }
         // Join Socket.IO room
         socket.emit("joinConversation", conversation._id);
       } catch (err) {
@@ -102,7 +113,7 @@ const Main_Page = ({ loggedInUserId }) => {
 
   // Socket.IO: Listen for new messages
   useEffect(() => {
-    socket.on("newMessage", (msg) => {
+    const handleNewMessage = (msg) => {
       // Only add message if it belongs to the current conversation
       if (msg.conversationId === conversationId) {
         setMessages((prev) => [...prev, msg]);
@@ -115,29 +126,22 @@ const Main_Page = ({ loggedInUserId }) => {
             : conv
         )
       );
-    });
-    return () => {
-      socket.off("newMessage");
+      // Refetch unread counts for all conversations
+      if (currentUser) {
+        getUnreadCounts(currentUser._id).then(setUnreadCounts);
+      }
     };
-  }, [conversationId]);
+    socket.on("newMessage", handleNewMessage);
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+    };
+  }, [conversationId, currentUser]);
 
   // Send message handler
   const handleSendMessage = async (messageContent) => {
     if (!conversationId || !currentUser) return;
     try {
-      const token = getToken();
-      const res = await fetch(`${API_URL}/api/messages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          conversationId,
-          senderId: currentUser._id,
-          text: messageContent,
-        }),
-      });
+      await sendMessage(conversationId, currentUser._id, messageContent);
     } catch (err) {
       console.error("Error sending message:", err);
     }
@@ -149,6 +153,19 @@ const Main_Page = ({ loggedInUserId }) => {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Clear chat handler
+  const handleClearChat = async (client) => {
+    if (!conversationId) return;
+    try {
+      await deleteConversation(conversationId);
+      setConversations((prev) => prev.filter((conv) => conv._id !== conversationId));
+      setMessages([]);
+      setSelectedClient(null);
+    } catch (err) {
+      console.error("Error clearing chat messages and conversation:", err);
+    }
+  };
 
   if (loading) {
     return (
@@ -178,10 +195,18 @@ const Main_Page = ({ loggedInUserId }) => {
       sender_id: conv.lastMessage.senderId,
       timestamp: conv.lastMessage.timestamp,
     } : undefined;
+    
+    // Count unread messages for this conversation
+    let unreadCount = 0;
+    if (conv && conv._id) {
+      unreadCount = unreadCounts[conv._id] || 0;
+    }
+    
     return {
       ...client,
       messages: [],
       lastMessagePreview: lastMsg,
+      unreadCount,
     };
   });
 
@@ -218,6 +243,7 @@ const Main_Page = ({ loggedInUserId }) => {
               <ChatArea
                 customer={selectedClientWithMessages}
                 onSendMessage={handleSendMessage}
+                onClearChat={handleClearChat}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
