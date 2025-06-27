@@ -4,6 +4,7 @@ import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import io from "socket.io-client";
+import { isValidGmail, isValidPhone, isStrongPassword } from "../lib/validation";
 
 const Signup = () => {
   const router = useRouter();
@@ -16,6 +17,19 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    // Frontend validation
+    if (!isValidGmail(email)) {
+      toast.error('Email must be a valid Gmail address');
+      return;
+    }
+    if (!isValidPhone(mobile_no)) {
+      toast.error('Mobile number must be 10 digits');
+      return;
+    }
+    if (!isStrongPassword(password)) {
+      toast.error('Password must be at least 8 characters and include upper, lower, number, and special character');
+      return;
+    }
     try {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
@@ -74,7 +88,6 @@ const Signup = () => {
               value={mobile_no}
               onChange={(e) => setMobileNo(e.target.value)}
               className="w-full p-2 border rounded"
-              required
             />
           </div>
 

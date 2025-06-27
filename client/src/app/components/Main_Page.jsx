@@ -41,6 +41,7 @@ const Main_Page = ({ loggedInUserId }) => {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const router = useRouter();
+  const [showChatArea, setShowChatArea] = useState(false); // for mobile navigation
 
   // Helper to get JWT token
   const getToken = () =>
@@ -199,6 +200,14 @@ const Main_Page = ({ loggedInUserId }) => {
     window.location.reload();
   };
 
+  // When a chat is selected, show chat area on mobile
+  useEffect(() => {
+    if (selectedClient) setShowChatArea(true);
+  }, [selectedClient]);
+
+  // Handler for back button in chat area (mobile)
+  const handleBackToChatList = () => setShowChatArea(false);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-gray-600 text-lg">
@@ -255,57 +264,52 @@ const Main_Page = ({ loggedInUserId }) => {
     : null;
 
   return (
-    <div className="flex h-screen">
-      {/* <section className="w-15">
-        <Sidebar />
-      </section> */}
-      <div className="flex flex-col flex-1">
-        <Header
-          userName={currentUser.name}
-          onEditProfile={handleEditProfile}
-          onDeleteAccount={handleDeleteAccount}
-        />
-        <div className="flex flex-1">
-          <section className="w-1/3 border border-gray-100">
-            <ChatCard
-              clients={clientsWithPreview}
-              selectedClient={selectedClient}
-              setSelectedClient={setSelectedClient}
-              loggedInUserId={currentUser._id}
+    <div className="flex flex-col min-h-screen h-full bg-gray-100">
+      <Header
+        userName={currentUser?.name}
+        onEditProfile={handleEditProfile}
+        onDeleteAccount={handleDeleteAccount}
+      />
+      <div className="flex flex-1 flex-col md:flex-row w-full max-w-full mx-auto h-full">
+        {/* Sidebar / Chat List */}
+        <section className={`flex flex-col flex-1 h-full w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 bg-white md:h-auto md:min-h-screen flex-shrink-0 ${showChatArea && 'hidden md:block'}`}>
+          <ChatCard
+            clients={clientsWithPreview}
+            selectedClient={selectedClient}
+            setSelectedClient={setSelectedClient}
+            loggedInUserId={currentUser?._id}
+          />
+        </section>
+        {/* Main Chat Area */}
+        <section className={`flex-1 w-full md:w-2/3 lg:w-3/4 flex flex-col ${!showChatArea && 'hidden md:flex'} h-full`}>
+          {selectedClientWithMessages ? (
+            <ChatArea
+              customer={selectedClientWithMessages}
+              onSendMessage={handleSendMessage}
+              onClearChat={handleClearChat}
+              onBack={handleBackToChatList}
             />
-          </section>
-          <section className="flex-1">
-            {selectedClientWithMessages ? (
-              <ChatArea
-                customer={selectedClientWithMessages}
-                onSendMessage={handleSendMessage}
-                onClearChat={handleClearChat}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-700 bg-gray-200">
-                Select a client to start chatting.
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </section>
-          {/* <section className="w-14">
-            <Sidebar_Right />
-          </section> */}
-        </div>
-        <ProfileForm
-          open={profileModalOpen}
-          onClose={() => setProfileModalOpen(false)}
-          onSubmit={handleProfileUpdate}
-          initialData={currentUser}
-        />
-        <ConfirmDialog
-          open={deleteDialogOpen}
-          title="Delete Account"
-          message="Are you sure you want to delete your account? This cannot be undone."
-          onConfirm={confirmDeleteAccount}
-          onCancel={() => setDeleteDialogOpen(false)}
-        />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-700 bg-gray-200 text-center text-base md:text-lg p-4">
+              Select a client to start chatting.
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </section>
       </div>
+      <ProfileForm
+        open={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        onSubmit={handleProfileUpdate}
+        initialData={currentUser}
+      />
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Delete Account"
+        message="Are you sure you want to delete your account? This cannot be undone."
+        onConfirm={confirmDeleteAccount}
+        onCancel={() => setDeleteDialogOpen(false)}
+      />
     </div>
   );
 };

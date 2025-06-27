@@ -10,7 +10,7 @@ import { CiMenuKebab } from "react-icons/ci";
 import ConfirmDialog from "./ConfirmDialog";
 
 
-const ChatArea = ({ customer, onSendMessage, onClearChat }) => {
+const ChatArea = ({ customer, onSendMessage, onClearChat, onBack }) => {
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -56,19 +56,27 @@ const ChatArea = ({ customer, onSendMessage, onClearChat }) => {
 
   return (
     <div className="flex-1 flex flex-col justify-between bg-gray-50 border rounded border-gray-200 h-160 pb-2 overflow-y-scroll">
-      <div className="flex justify-between p-3 font-semibold border-b-1 border-gray-300 shadow-md bg-gray-100">
-        <div className="flex space-x-2">
-          <CgProfile size={25} className="mr-2 text-gray-800" />
-          {customer.name}
+      <div className="flex flex-row justify-between items-center p-2 md:p-3 font-semibold border-b-1 border-gray-300 shadow-md bg-gray-100 text-xs md:text-base">
+        <div className="flex space-x-2 items-center">
+          {/* Back button for mobile */}
+          <button
+            className="md:hidden mr-2 text-gray-700"
+            onClick={onBack}
+            aria-label="Back to chat list"
+          >
+            &#8592;
+          </button>
+          <CgProfile size={20} className="mr-1 text-gray-800" />
+          <span className="truncate">{customer.name}</span>
         </div>
-        <div className="flex gap-2 ">
-          <IoIosSearch size={20} />
+        <div className="flex gap-2 items-center">
+          <IoIosSearch size={18} />
           <div className="relative">
-            <CiMenuKebab size={20} className="cursor-pointer" onClick={() => setMenuOpen((v) => !v)} />
+            <CiMenuKebab size={18} className="cursor-pointer" onClick={() => setMenuOpen((v) => !v)} />
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow z-10">
                 <button
-                  className="block w-full text-left px-4 py-2 text-sm cursor-pointer"
+                  className="block w-full text-left px-4 py-2 text-xs md:text-sm cursor-pointer"
                   onClick={handleClearChat}
                 >
                   Clear Chat
@@ -77,7 +85,6 @@ const ChatArea = ({ customer, onSendMessage, onClearChat }) => {
             )}
           </div>
         </div>
-        
       </div>
       <div className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-hide bg-gray-200">
         {/* Add null/undefined check for customer.messages before accessing length */}

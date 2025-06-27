@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { isValidGmail, isValidPhone, isStrongPassword } from "../lib/validation";
+import { toast } from "react-hot-toast";
 
 const ProfileForm = ({ open, onClose, onSubmit, initialData }) => {
   const [form, setForm] = useState({ name: "", password: "", mobileNo: "", email: "" });
@@ -22,6 +24,23 @@ const ProfileForm = ({ open, onClose, onSubmit, initialData }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Frontend validation
+    if (!form.name) {
+      toast.error('Name is required');
+      return;
+    }
+    if (!isValidGmail(form.email)) {
+      toast.error('Email must be a valid Gmail address');
+      return;
+    }
+    if (!isValidPhone(form.mobileNo)) {
+      toast.error('Mobile number must be 10 digits');
+      return;
+    }
+    if (form.password && !isStrongPassword(form.password)) {
+      toast.error('Password must be at least 8 characters and include upper, lower, number, and special character');
+      return;
+    }
     onSubmit(form);
   };
 

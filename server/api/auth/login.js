@@ -9,14 +9,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'yoursecretkey';
 
 router.post('/', async (req, res) => {
   await dbConnect();
-  const { email, mobile_no, password } = req.body;
+  const { identifier, password } = req.body; // identifier can be email or mobile_no
 
   try {
     // Allow login with either email or mobile_no
     const user = await User.findOne({
       $or: [
-        { email: email || undefined },
-        { mobile_no: mobile_no || undefined }
+        { email: identifier },
+        { mobile_no: identifier }
       ]
     });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });

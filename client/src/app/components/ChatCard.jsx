@@ -31,7 +31,7 @@ const ChatCard = ({
   }, [searchTerm, clients]);
 
   return (
-    <div className="h-160 p-1 bg-gray-50 rounded-md shadow-sm">
+    <div className="flex-1 h-full flex flex-col bg-gray-50 rounded-md shadow-sm">
       {/* Top Actions */}
       <div className="flex items-center justify-between p-2">
        
@@ -41,7 +41,7 @@ const ChatCard = ({
             placeholder="Search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-200 px-2 py-1 rounded-md text-sm w-[1/3]"
+            className="border border-gray-200 px-2 py-1 rounded-md text-xs md:text-sm w-2/3 md:w-1/3"
           />
           {/* <button className="flex bg-green-100 text-green-700 text-sm px-2 py-1 rounded gap-1">
             <MdFilterList />
@@ -52,7 +52,7 @@ const ChatCard = ({
       <hr className="text-gray-200 space-y-2" />
 
       {/* Chat List */}
-      <div className="p-1 space-y-1 bg-gray-50 h-150 rounded overflow-y-auto">
+      <div className="h-full p-1 space-y-1 bg-gray-50 h-56 md:h-150 rounded overflow-y-auto">
         {filteredClients.length > 0 ? (
           filteredClients.map((client) => {
             const lastMessage = client.lastMessagePreview;
@@ -65,14 +65,14 @@ const ChatCard = ({
             return (
               <div
                 key={client._id}
-                className={`p-3 rounded cursor-pointer hover:bg-gray-100 border border-gray-200 ${
+                className={`p-2 md:p-3 rounded cursor-pointer hover:bg-gray-100 border border-gray-200 ${
                   selectedClient?._id === client._id ? "bg-gray-200" : ""
-                } flex items-center justify-between`}
+                } flex items-center justify-between text-xs md:text-sm`}
                 onClick={() => setSelectedClient(client)}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium">{client.name}</div>
-                  <div className="flex items-center text-sm text-gray-500 truncate">
+                  <div className="font-medium truncate">{client.name}</div>
+                  <div className="flex items-center text-gray-500 truncate">
                     <span className="truncate">
                       {lastMessage
                         ? `${senderLabel}: ${lastMessage.context}`
@@ -103,7 +103,7 @@ const ChatCard = ({
             );
           })
         ) : (
-          <p className="text-gray-400 text-sm text-center">
+          <p className="text-gray-400 text-xs md:text-sm text-center">
             No matching clients.
           </p>
         )}
