@@ -9,13 +9,13 @@ const ConfirmDialog = ({ open, title, message, onConfirm, onCancel }) => {
         <p className="mb-4 text-gray-700">{message}</p>
         <div className="flex justify-end gap-2">
           <button
-            className="px-4 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+            className="px-4 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 cursor-pointer"
             onClick={onCancel}
           >
             No
           </button>
           <button
-            className="px-4 py-1 rounded bg-red-500 hover:bg-red-600 text-white"
+            className="px-4 py-1 rounded bg-red-500 hover:bg-red-600 text-white cursor-pointer"
             onClick={onConfirm}
           >
             Yes

@@ -10,9 +10,15 @@ import { AiFillMessage } from "react-icons/ai";
 
 // import { IoListOutline } from "react-icons/io5";
 // import { FaRegCircle } from "react-icons/fa";
+import { useState } from "react";
 
-export default function Header({ userName }) {
+export default function Header({ userName, onEditProfile, onDeleteAccount }) {
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleRefresh = () => {
+    router.refresh();
+  };
 
   return (
     <div className="flex justify-between items-center shadow-md h-15 p-1 bg-white">
@@ -34,7 +40,7 @@ export default function Header({ userName }) {
         >
           <p className="text-[13px] text-gray-900">Logout</p>
         </button>
-        <button className="flex items-center px-2 py-1 border border-gray-200 rounded-md hover:bg-gray-100">
+        <button className="flex items-center px-2 py-1 border border-gray-200 rounded-md hover:bg-gray-100" onClick={handleRefresh}>
           <LuRefreshCcwDot className="mr-1" size={14} />
           <p className="text-[12px]">Refresh</p>
         </button>
@@ -59,9 +65,29 @@ export default function Header({ userName }) {
           <IoIosNotificationsOff size={14} />
         </button>*/}
 
-        <button className=" p-1 mr-2 border border-gray-200 rounded-md hover:bg-gray-100 cursor-pointer">
-          <FaUserCircle size={27} />
-        </button> 
+        <div className="relative">
+          <FaUserCircle
+            size={27}
+            className="cursor-pointer text-gray-700"
+            onClick={() => setMenuOpen((v) => !v)}
+          />
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-20">
+              <button
+                className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                onClick={() => { setMenuOpen(false); onEditProfile && onEditProfile(); }}
+              >
+                Edit Profile
+              </button>
+              <button
+                className="block w-full text-left px-4 py-2 text-sm hover:bg-red-100 text-red-600"
+                onClick={() => { setMenuOpen(false); onDeleteAccount && onDeleteAccount(); }}
+              >
+                Delete Account
+              </button>
+            </div>
+          )}
+        </div> 
       </div>
     </div>
   );

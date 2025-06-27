@@ -87,4 +87,26 @@ export async function getUnreadCounts(userId) {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.json();
+}
+
+export async function updateUserProfile(userId, data) {
+  const token = getToken();
+  const res = await fetch(`${API_URL}/api/users/${userId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function deleteUser(userId) {
+  const token = getToken();
+  const res = await fetch(`${API_URL}/api/users/${userId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.json();
 } 

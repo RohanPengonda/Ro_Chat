@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import toast from 'react-hot-toast';
 
 import Header from "./Header.jsx";
 import ChatCard from "./ChatCard.jsx";
@@ -16,7 +18,11 @@ import {
   deleteConversation,
   markMessagesAsRead,
   getUnreadCounts,
+  deleteUser,
+  updateUserProfile,
 } from "../lib/api";
+import ProfileForm from "./ProfileForm.jsx";
+import ConfirmDialog from "./ConfirmDialog.jsx";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const socket = io(API_URL); // Connects to the backend server
@@ -32,6 +38,9 @@ const Main_Page = ({ loggedInUserId }) => {
   // Store all conversations and their last messages
   const [conversations, setConversations] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const router = useRouter();
 
   // Helper to get JWT token
   const getToken = () =>
@@ -46,7 +55,8 @@ const Main_Page = ({ loggedInUserId }) => {
         const self = await fetchSelf(loggedInUserId);
         setCurrentUser(self);
         setClients(users);
-        if (users.length > 0) setSelectedClient(users[0]);
+        // Do not select any chat by default
+        // if (users.length > 0) setSelectedClient(users[0]);
       } catch (err) {
         console.error("Error fetching users:", err);
       }
@@ -162,9 +172,31 @@ const Main_Page = ({ loggedInUserId }) => {
       setConversations((prev) => prev.filter((conv) => conv._id !== conversationId));
       setMessages([]);
       setSelectedClient(null);
+      toast.success('Chat cleared!');
     } catch (err) {
       console.error("Error clearing chat messages and conversation:", err);
     }
+  };
+
+  // Edit profile handler
+  const handleEditProfile = () => setProfileModalOpen(true);
+  // Delete account handler
+  const handleDeleteAccount = () => setDeleteDialogOpen(true);
+  // Confirm delete
+  const confirmDeleteAccount = async () => {
+    if (!currentUser) return;
+    await deleteUser(currentUser._id);
+    toast.success('Account deleted successfully!');
+    router.push("/login");
+  };
+  // Update profile
+  const handleProfileUpdate = async (data) => {
+    if (!currentUser) return;
+    await updateUserProfile(currentUser._id, data);
+    setProfileModalOpen(false);
+    toast.success('Profile updated!');
+    // Optionally refetch user info
+    window.location.reload();
   };
 
   if (loading) {
@@ -228,7 +260,11 @@ const Main_Page = ({ loggedInUserId }) => {
         <Sidebar />
       </section> */}
       <div className="flex flex-col flex-1">
-        <Header userName={currentUser.name} />
+        <Header
+          userName={currentUser.name}
+          onEditProfile={handleEditProfile}
+          onDeleteAccount={handleDeleteAccount}
+        />
         <div className="flex flex-1">
           <section className="w-1/3 border border-gray-100">
             <ChatCard
@@ -246,7 +282,7 @@ const Main_Page = ({ loggedInUserId }) => {
                 onClearChat={handleClearChat}
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="flex items-center justify-center h-full text-gray-700 bg-gray-200">
                 Select a client to start chatting.
               </div>
             )}
@@ -256,6 +292,19 @@ const Main_Page = ({ loggedInUserId }) => {
             <Sidebar_Right />
           </section> */}
         </div>
+        <ProfileForm
+          open={profileModalOpen}
+          onClose={() => setProfileModalOpen(false)}
+          onSubmit={handleProfileUpdate}
+          initialData={currentUser}
+        />
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          title="Delete Account"
+          message="Are you sure you want to delete your account? This cannot be undone."
+          onConfirm={confirmDeleteAccount}
+          onCancel={() => setDeleteDialogOpen(false)}
+        />
       </div>
     </div>
   );

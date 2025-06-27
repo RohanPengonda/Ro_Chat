@@ -1,14 +1,10 @@
 // ChatArea.jsx
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import Image from "next/image";
 import { IoSend, IoCheckmark, IoCheckmarkDone } from "react-icons/io5";
-import { FiPaperclip, FiSmile, FiClock, FiAlignRight } from "react-icons/fi";
-import { PiClockClockwiseFill } from "react-icons/pi";
-import { HiOutlineSparkles } from "react-icons/hi";
-import { FaMicrophone } from "react-icons/fa";
+import { FiPaperclip} from "react-icons/fi";
+
 import { IoIosSearch } from "react-icons/io";
-import { HiSparkles } from "react-icons/hi";
 import { CgProfile } from "react-icons/cg";
 import { CiMenuKebab } from "react-icons/ci";
 import ConfirmDialog from "./ConfirmDialog";
@@ -72,7 +68,7 @@ const ChatArea = ({ customer, onSendMessage, onClearChat }) => {
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow z-10">
                 <button
-                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 text-sm cursor-pointer"
                   onClick={handleClearChat}
                 >
                   Clear Chat
@@ -164,6 +160,7 @@ const ChatArea = ({ customer, onSendMessage, onClearChat }) => {
       </div>
       <div className="bg-gray-100">
         <div className="flex items-center justify-between border-t px-4 py-2 ">
+          <FiPaperclip className="w-5 h-5 cursor-pointer" />
           <input
             type="text"
             placeholder="Message..."
@@ -178,9 +175,8 @@ const ChatArea = ({ customer, onSendMessage, onClearChat }) => {
           />
         </div>
 
-        <div className="flex items-center justify-between ">
+        {/* <div className="flex items-center justify-between ">
           <div className="flex space-x-4 text-gray-600 gap-2 px-6">
-            <FiPaperclip className="w-5 h-5 cursor-pointer" />
             <FiSmile className="w-5 h-5 cursor-pointer" />
             <FiClock className="w-5 h-5 cursor-pointer" />
             <PiClockClockwiseFill className="w-5 h-5 cursor-pointer" />
@@ -201,7 +197,7 @@ const ChatArea = ({ customer, onSendMessage, onClearChat }) => {
               Periskope
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
       <ConfirmDialog
         open={dialogOpen}

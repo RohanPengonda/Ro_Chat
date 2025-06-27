@@ -70,28 +70,35 @@ const ChatCard = ({
                 } flex items-center justify-between`}
                 onClick={() => setSelectedClient(client)}
               >
-                <div>
+                <div className="flex-1 min-w-0">
                   <div className="font-medium">{client.name}</div>
-                  <div className=" flex justify-between text-sm text-gray-500 truncate">
-                    {lastMessage
-                      ? `${senderLabel}: ${lastMessage.context}`
-                      : "No messages yet."}
+                  <div className="flex items-center text-sm text-gray-500 truncate">
+                    <span className="truncate">
+                      {lastMessage
+                        ? `${senderLabel}: ${lastMessage.context}`
+                        : "No messages yet."}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col justify-between items-end ml-2 min-w-fit h-full" style={{height: '40px'}}>
+                  <div>
+                    {client.unreadCount > 0 && (
+                      <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {client.unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-auto">
                     {lastMessage?.timestamp && (
-                      <p className="pl-20">
+                      <span className="text-xs text-gray-500">
                         {new Date(lastMessage.timestamp).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
-                      </p>
+                      </span>
                     )}
                   </div>
                 </div>
-                {/* Unread badge */}
-                {client.unreadCount > 0 && (
-                  <span className="ml-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    {client.unreadCount}
-                  </span>
-                )}
               </div>
             );
           })
