@@ -173,6 +173,8 @@ const Main_Page = ({ loggedInUserId }) => {
       setConversations((prev) => prev.filter((conv) => conv._id !== conversationId));
       setMessages([]);
       setSelectedClient(null);
+      // On mobile, go back to chat list after clearing
+      setShowChatArea(false);
       toast.success('Chat cleared!');
     } catch (err) {
       console.error("Error clearing chat messages and conversation:", err);

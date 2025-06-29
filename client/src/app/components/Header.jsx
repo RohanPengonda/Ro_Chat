@@ -16,7 +16,10 @@ export default function Header({ userName, onEditProfile, onDeleteAccount }) {
   return (
     <div className="flex flex-row justify-between items-center shadow-md h-15 p-2 bg-white">
       {/* Left - Title */}
-      <div className="flex items-center space-x-2 pl-0 md:pl-5 text-gray-600 font-semibold text-sm">
+      <div 
+        className="flex items-center space-x-2 pl-0 md:pl-5 text-gray-600 font-semibold text-sm cursor-pointer hover:text-gray-800"
+        onClick={() => router.push("/")}
+      >
         <AiFillMessage size={18} />
         <span className="text-gray-500 text-[17px]">chats</span>
       </div> 

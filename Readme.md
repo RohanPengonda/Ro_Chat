@@ -1,4 +1,3 @@
-
 # Chat App
 
 ## Description
@@ -47,22 +46,26 @@ A modern, responsive real-time chat application built with React, Next.js, Node.
 
 ## Screenshots
 
-> **Add your screenshots below!**
->
-> - Home / Chat List  
->   ![Chat List Screenshot](screenshots/chat-list.png)
->
-> - Chat Area  
->   ![Chat Area Screenshot](screenshots/chat-area.png)
->
-> - Mobile View  
->   ![Mobile Screenshot](screenshots/mobile-view.png)
->
-> - User Menu & Profile  
->   ![User Menu Screenshot](screenshots/user-menu.png)
->
-> - Toast Notifications  
->   ![Toast Screenshot](screenshots/toast.png)
+### Home / Chat List
+![Home Page](./screenshots/home.png)
+
+### Chat List with Conversations
+![Chat List](./screenshots/chat-list.png)
+
+### Chat Area with Messages
+![Chat Area](./screenshots/chat-area.png)
+
+### Mobile Responsive View
+![Mobile View](./screenshots/mobile.png)
+
+### User Menu & Profile Options
+![User Menu](./screenshots/user-menu.png)
+
+### Login & Signup Pages
+![Login Signup](./screenshots/login-signup.png)
+
+### Clear Chat Functionality
+![Clear Chat](./screenshots/clear-chat.png)
 
 ---
 

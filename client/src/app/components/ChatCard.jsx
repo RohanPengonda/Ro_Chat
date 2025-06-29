@@ -41,7 +41,7 @@ const ChatCard = ({
             placeholder="Search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-200 px-2 py-1 rounded-md text-xs md:text-sm w-2/3 md:w-1/3"
+            className="border border-gray-300 px-2 py-1 rounded-md text-xs md:text-sm w-full"
           />
           {/* <button className="flex bg-green-100 text-green-700 text-sm px-2 py-1 rounded gap-1">
             <MdFilterList />
