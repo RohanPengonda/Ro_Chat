@@ -272,7 +272,7 @@ const Main_Page = ({ loggedInUserId }) => {
       />
       <div className="flex flex-1 flex-col md:flex-row w-full max-w-full mx-auto h-full">
         {/* Sidebar / Chat List */}
-        <section className={`flex flex-col flex-1 h-full w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 bg-white md:h-auto md:min-h-screen flex-shrink-0 ${showChatArea && 'hidden md:block'}`}>
+        <section className={`flex flex-col h-full w-full md:w-[30%] border-r border-gray-200 bg-white md:h-auto md:min-h-screen flex-shrink-0 ${showChatArea && 'hidden md:block'}`}>
           <ChatCard
             clients={clientsWithPreview}
             selectedClient={selectedClient}
@@ -281,7 +281,7 @@ const Main_Page = ({ loggedInUserId }) => {
           />
         </section>
         {/* Main Chat Area */}
-        <section className={`flex-1 w-full md:w-2/3 lg:w-3/4 flex flex-col ${!showChatArea && 'hidden md:flex'} h-full`}>
+        <section className={`flex flex-col h-full w-full md:w-[70%] ${!showChatArea && 'hidden md:flex'} bg-white`}>
           {selectedClientWithMessages ? (
             <ChatArea
               customer={selectedClientWithMessages}
